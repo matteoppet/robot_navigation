@@ -9,9 +9,9 @@ class Robot(gym.Env):
     def __init__(self):
         super().__init__()
 
-        self.action_space = spaces.Discrete(N_DISCRETE_ACTIONS)
-        self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(N_CHANNELS, HEIGHT, WIDTH), dtype=np.uint8)
+        self.action_space = spaces.Discrete(4)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
+                                            shape=(N_CHANNELS, HEIGHT, WIDTH), dtype=np.int64)
 
     def step(self, action):
         ...
