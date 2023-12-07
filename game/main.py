@@ -1,20 +1,22 @@
 import pygame
-from settings import *
 from player import Player
 from world import World
+from boundaries import create_boundaries, sprite_group_boundaries
 
 pygame.init()
-screen = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
+screen = pygame.display.set_mode((1120, 992))
 clock = pygame.time.Clock()
 
-
-PLAYER = Player()
 
 WORLD = World()
 WORLD.create_tiles() 
 WORLD.create_objects()
-sprite_group = WORLD.sprite_group # get the sprite gruop variables
+sprite_group = WORLD.sprite_group
+sprite_group_objects = WORLD.sprite_group_objects
+PLAYER = Player()
 
+create_boundaries()
+sprite_group_bound = sprite_group_boundaries
 
 running = True
 while running:
@@ -22,11 +24,21 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    sprite_group.draw(screen) # draw the tiles on the screen
+    sprite_group.draw(screen)
 
-    PLAYER.move()
     screen.blit(PLAYER.image, (PLAYER.x, PLAYER.y))
+    PLAYER.move()
+    
+
+    for sprite in sprite_group_boundaries:
+        pygame.draw.polygon(screen, "white", sprite.points)
+
+
 
     pygame.display.flip()
     pygame.display.update()
     clock.tick(60)
+
+
+
+# CONTINUE WITH ALL THE TUNNELS
