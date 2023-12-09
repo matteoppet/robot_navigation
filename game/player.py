@@ -14,6 +14,7 @@ class Player(pygame.sprite.Sprite):
 
         self.image = pygame.image.load("../assets/images/player/player_front.png") # default image
         self.rect = pygame.Rect(100, 100, self.width, self.height)
+        self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
         keys = pygame.key.get_pressed()
