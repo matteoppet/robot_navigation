@@ -49,9 +49,3 @@ def create_boundaries():
         list_points = create_list_boundaries("Delimitator", index)
         surface = Boundaries(list_points) # check if position and size are correct
         sprite_group_boundaries.add(surface)        
-
-
-# HERE I CREATE THE BOUNDARIES SPRITES
-# I CALL CREATE_BOUNDARIES IN MAIN.PY
-# THEN IT CALLS BUONDARIES CLASS AND CREATES THE SPRITE
-# THEN I GO THROUGH THE SPRITES IN THE GROUP AND DRAW IT IN MAIN.PY
