@@ -4,14 +4,16 @@ from helpers import create_list_boundaries
 sprite_group_boundaries = sprite.Group()
 
 class Boundaries(sprite.Sprite):
-    def __init__(self, vertices):
+    def __init__(self, vertices, name):
         super().__init__()
         self.vertices = vertices
 
+        self.name = name
 
         # Creates bounding rectangle for polygon by taking the union of individual
         # rectangles created for each vertex
         self.rect = Rect(vertices[0], (0,0)).unionall([Rect(v, (0,0)) for v in vertices])
+        print(f"Name: {self.name}, Rect: {self.rect}")
 
         # Generate surface for the mask
         self.mask_surface = self.create_mask_surface()
@@ -33,19 +35,16 @@ class Boundaries(sprite.Sprite):
         height = max_y - min_y
 
         # created transparent surface
-        surface = Surface((width, height), SRCALPHA)
+        surface = Surface((width, height))
         # CRUCIAL. drawing the polygon on the mask surface
         draw.polygon(surface, (255, 255, 255), [(x - min_x, y - min_y) for x, y in self.vertices])
         
         return surface
-    
-    def draw(self):
-        ...
 
 
 # FIX OTHERS BOUNDARIES: it doesn't find it
 def create_boundaries():
     for index in range(1, 7):
         list_points = create_list_boundaries("Delimitator", index)
-        surface = Boundaries(list_points) # check if position and size are correct
-        sprite_group_boundaries.add(surface)        
+        surface = Boundaries(list_points, index) # check if position and size are correct
+        sprite_group_boundaries.add(surface)

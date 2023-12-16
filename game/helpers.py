@@ -3,10 +3,11 @@ from pytmx.util_pygame import load_pygame
 
 
 def collide_player(player, sprites):
-    collisions = pygame.sprite.spritecollide(player, sprites, False, pygame.sprite.collide_mask)
-    
-    if collisions:
-        print("Collision detected")
+    for sprite in sprites:
+
+        collisions = pygame.sprite.collide_rect(player, sprite)
+        if collisions:
+            print("Collision detected")
 
 
 def create_list_boundaries(class_object, index):
@@ -27,7 +28,14 @@ def collide_sensors(sensors, boundaries):
     collisions = pygame.sprite.groupcollide(sensors, boundaries, False, False)
 
     sensors_colliding = []
-    for sensor, _ in collisions.items():
-        sensors_colliding.append(sensor.name)
+    dictionary_info_positions = {}
+    for sensor, boundary_list in collisions.items():
+        for boundary in boundary_list:
+            sensors_colliding.append(sensor.name)
 
-    return sensors_colliding
+            if sensor.name in ("left", "right"):
+                dictionary_info_positions[sensor.name] = [sensor.rect.x, boundary.rect.x]
+            else:
+                dictionary_info_positions[sensor.name] = [sensor.rect.x, sensor.rect.y, boundary.rect.x, boundary.rect.y]
+
+    return dictionary_info_positions, sensors_colliding

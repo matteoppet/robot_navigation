@@ -15,14 +15,20 @@ class World:
 
         self.sprite_group = pygame.sprite.Group()
         self.sprite_group_objects = pygame.sprite.Group()
+        self.sprite_group_floor = pygame.sprite.Group()
 
     def create_tiles(self):
         layer_index = 0
         for layer in self.tmx_data:
             if hasattr(layer, "data"):
-                for x, y, surf in layer.tiles():
-                    pos = (x*32, y*32)
-                    Tile(pos=pos, surf=surf, layer=layer_index, groups=self.sprite_group)
+                if layer.name == "Floor grass":
+                    for x, y, surf in layer.tiles():
+                        pos = (x*32, y*32)
+                        Tile(pos=pos, surf=surf, layer=layer_index, groups=self.sprite_group_floor)
+                else:
+                    for x, y, surf in layer.tiles():
+                        pos = (x*32, y*32)
+                        Tile(pos=pos, surf=surf, layer=layer_index, groups=self.sprite_group)
             layer_index += 1
                     
     def create_objects(self):
