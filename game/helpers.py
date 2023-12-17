@@ -28,14 +28,8 @@ def collide_sensors(sensors, boundaries):
     collisions = pygame.sprite.groupcollide(sensors, boundaries, False, False)
 
     sensors_colliding = []
-    dictionary_info_positions = {}
     for sensor, boundary_list in collisions.items():
         for boundary in boundary_list:
             sensors_colliding.append(sensor.name)
 
-            if sensor.name in ("left", "right"):
-                dictionary_info_positions[sensor.name] = [sensor.rect.x, boundary.rect.x]
-            else:
-                dictionary_info_positions[sensor.name] = [sensor.rect.x, sensor.rect.y, boundary.rect.x, boundary.rect.y]
-
-    return dictionary_info_positions, sensors_colliding
+    return sensors_colliding

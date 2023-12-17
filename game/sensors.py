@@ -31,7 +31,7 @@ def create_sensors(player_pos_x, player_pos_y, length_sensor):
         sprite_group_sensors.add(surface)
         
 
-def draw_lines(screen, rect_x, rect_y, rect_width, rect_height, color=(255, 255, 255)):
+def draw_lines(screen, rect_x, rect_y, rect_width, rect_height, color="green"):
     draw.rect(
         screen, 
         color, 

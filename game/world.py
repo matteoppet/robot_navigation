@@ -21,7 +21,7 @@ class World:
         layer_index = 0
         for layer in self.tmx_data:
             if hasattr(layer, "data"):
-                if layer.name == "Floor grass":
+                if layer.name == "Boundaries grass":
                     for x, y, surf in layer.tiles():
                         pos = (x*32, y*32)
                         Tile(pos=pos, surf=surf, layer=layer_index, groups=self.sprite_group_floor)
