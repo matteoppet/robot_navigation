@@ -1,4 +1,0 @@
-colliding adjusted with instead of polygons, the floor, so now if the player goes on the floor it collides
-
-clean the code
-remove boundary if not in use

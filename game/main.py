@@ -2,48 +2,11 @@ import pygame
 from player import Player
 from world import World
 from sensors import create_sensors, draw_lines, sprite_group_sensors
-from helpers import collide_player, collide_sensors
+from helpers import collide_player, collide_sensors, reset_game, mouse_function
 from settings import LENGTH_SENSOR
 
 
-pygame.init()
-screen = pygame.display.set_mode((1120, 992))
-clock = pygame.time.Clock()
-
-# world section
-WORLD = World()
-WORLD.create_tiles() 
-WORLD.create_objects()
-sprite_group = WORLD.sprite_group
-sprite_group_objects = WORLD.sprite_group_objects
-sprite_group_floor = WORLD.sprite_group_floor
-list_group_floor = [sprite for sprite in sprite_group_floor]
-
-# player section
-PLAYER = Player()
-
-# sensors section
-create_sensors(PLAYER.rect.centerx, PLAYER.rect.centery, length_sensor=LENGTH_SENSOR)
-sprite_group_sens = sprite_group_sensors
-global_list_sensors_colliding = []
-
-
-
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    # draw sprites
-    sprite_group_floor.draw(screen)
-    sprite_group.draw(screen)
-
-    # draw and move player
-    screen.blit(PLAYER.image, (PLAYER.x, PLAYER.y))
-    PLAYER.move()
-
-    # draw lines player
+def update_and_draw_lines():
     for sprite in sprite_group_sens:
         if sprite.name in ("right", "down"):
             sprite.rect.x = PLAYER.rect.centerx
@@ -56,15 +19,60 @@ while running:
             sprite.rect.y = PLAYER.rect.centery-LENGTH_SENSOR
 
         if sprite.name in global_list_sensors_colliding:
-            draw_lines(screen, sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height, color="red")
+            draw_lines(SCREEN, sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height, color="red")
         else:
-            draw_lines(screen, sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height)
+            draw_lines(SCREEN, sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height)
+
+
+pygame.init()
+SCREEN = pygame.display.set_mode((1120, 992))
+CLOCK = pygame.time.Clock()
+
+# world section
+WORLD = World()
+WORLD.create_tiles() 
+WORLD.create_objects()
+sprite_group = WORLD.sprite_group
+sprite_group_objects = WORLD.sprite_group_objects
+sprite_group_boundaries_floor = WORLD.sprite_group_boundaries_floor
+list_group_boundarties_floor = [sprite for sprite in sprite_group_boundaries_floor]
+
+# player section
+PLAYER = Player()
+
+# sensors section
+create_sensors(PLAYER.rect.centerx, PLAYER.rect.centery, length_sensor=LENGTH_SENSOR)
+sprite_group_sens = sprite_group_sensors
+global_list_sensors_colliding = []
+
+
+running = True
+while running:
+    
+    # draw sprites
+    sprite_group_boundaries_floor.draw(SCREEN)
+    sprite_group.draw(SCREEN)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        mouse_function(event, list_group_boundarties_floor, SCREEN)
+
+    # draw and move player
+    SCREEN.blit(PLAYER.image, (PLAYER.x, PLAYER.y))
+    PLAYER.move()
+
+    update_and_draw_lines()
 
     # check collisions
-    collide_player(PLAYER, list_group_floor)
+    died = collide_player(PLAYER, list_group_boundarties_floor)
+    if died:
+        reset_game(PLAYER)
 
-    list_sensors_colliding = collide_sensors(sprite_group_sens, sprite_group_floor)
+    list_sensors_colliding = collide_sensors(sprite_group_sens, sprite_group_boundaries_floor)
     global_list_sensors_colliding = list_sensors_colliding
 
+
     pygame.display.flip()
-    clock.tick(60)
+    CLOCK.tick(60)

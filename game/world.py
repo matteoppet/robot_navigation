@@ -15,7 +15,7 @@ class World:
 
         self.sprite_group = pygame.sprite.Group()
         self.sprite_group_objects = pygame.sprite.Group()
-        self.sprite_group_floor = pygame.sprite.Group()
+        self.sprite_group_boundaries_floor = pygame.sprite.Group()
 
     def create_tiles(self):
         layer_index = 0
@@ -24,7 +24,7 @@ class World:
                 if layer.name == "Boundaries grass":
                     for x, y, surf in layer.tiles():
                         pos = (x*32, y*32)
-                        Tile(pos=pos, surf=surf, layer=layer_index, groups=self.sprite_group_floor)
+                        Tile(pos=pos, surf=surf, layer=layer_index, groups=self.sprite_group_boundaries_floor)
                 else:
                     for x, y, surf in layer.tiles():
                         pos = (x*32, y*32)
