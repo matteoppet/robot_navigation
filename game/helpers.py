@@ -11,17 +11,17 @@ def collide_player(player, sprites):
             return True
 
 def create_list_boundaries(class_object, index):
-    tmx_data = load_pygame("../assets/tsx/basic.tmx") # load assets
-    boundire_points = [] # instintiated empty list
+    tmx_data = load_pygame("../assets/tsx/basic.tmx")
+    boundire_points = []
 
-    for obj in tmx_data.objects: # go through object
-        if obj.type == class_object: # go through object type
-            if obj.name == f"Boundarie{index}": # check for the buondire with the index
-                boundire_points = obj.points # set points on a variables
+    for obj in tmx_data.objects:
+        if obj.type == class_object:
+            if obj.name == f"Boundarie{index}":
+                boundire_points = obj.points
     
-    list_points = [[point.x, point.y] for point in boundire_points] # instintiated empty list
+    list_points = [[point.x, point.y] for point in boundire_points]
 
-    return list_points # return the list with the points to draw
+    return list_points 
 
 
 def collide_sensors(sensors, boundaries):
@@ -35,6 +35,7 @@ def collide_sensors(sensors, boundaries):
     return sensors_colliding
 
 
+# IMPLEMENT BETTER THIS FUNCTION
 def reset_game(player):
     x_player, y_player = player.reset()
 
@@ -69,6 +70,12 @@ def mouse_function(event, sprites, screen):
             if is_possible == -1:
                 print(f"Accessible, ZONE: x({position_mouse[0]}), y({position_mouse[1]})")
                 draw_circle_mouse(screen, position_mouse[0], position_mouse[1], "white")
+                return position_mouse
             else:
                 print(f"Not accessible, ZONE: x({position_mouse[0]}), y({position_mouse[1]})")
                 draw_circle_mouse(screen, position_mouse[0], position_mouse[1], "red")
+                return (0,0)
+            
+
+def create_random_position_for_ai():
+    pass
