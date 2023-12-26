@@ -2,7 +2,7 @@ import pygame
 from player import Player
 from world import World
 from sensors import create_sensors, draw_lines, sprite_group_sensors
-from helpers import collide_player, collide_sensors, reset_game, mouse_function
+from helpers import collide_player, collide_sensors, reset_game, mouse_function, create_distance_sprites, create_table_tiles, calculate_distance_boundaries
 from settings import LENGTH_SENSOR
 
 
@@ -36,6 +36,7 @@ sprite_group = WORLD.sprite_group
 sprite_group_objects = WORLD.sprite_group_objects
 sprite_group_boundaries_floor = WORLD.sprite_group_boundaries_floor
 list_group_boundarties_floor = [sprite for sprite in sprite_group_boundaries_floor]
+TABLE_TILES = create_table_tiles(sprite_group_boundaries_floor)
 
 # player section
 PLAYER = Player()
@@ -44,6 +45,11 @@ PLAYER = Player()
 create_sensors(PLAYER.rect.centerx, PLAYER.rect.centery, length_sensor=LENGTH_SENSOR)
 sprite_group_sens = sprite_group_sensors
 global_list_sensors_colliding = []
+
+
+# DISTANCE
+create_distance_sprites()
+sprite_group_for_distance = create_distance_sprites()
 
 
 running = True
@@ -63,16 +69,22 @@ while running:
     SCREEN.blit(PLAYER.image, (PLAYER.x, PLAYER.y))
     PLAYER.move()
 
-    update_and_draw_lines()
+    # update_and_draw_lines()
 
     # check collisions
-    died = collide_player(PLAYER, list_group_boundarties_floor)
+    died = collide_player(PLAYER, list_group_boundarties_floor, "list")
     if died:
         reset_game(PLAYER)
 
     list_sensors_colliding = collide_sensors(sprite_group_sens, sprite_group_boundaries_floor)
     global_list_sensors_colliding = list_sensors_colliding
 
+    # LEFT SOLVED
+    direction_distance = {}
+    for direction in ["left", "right", "up", "down"]:
+        distance = calculate_distance_boundaries(TABLE_TILES, PLAYER, direction)
+        direction_distance[direction] = distance
+        print(direction_distance)
 
     pygame.display.flip()
     CLOCK.tick(60)

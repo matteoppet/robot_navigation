@@ -6,26 +6,8 @@ from gymnasium import spaces
 from player import Player
 from world import World
 from sensors import create_sensors, draw_lines, sprite_group_sensors
-from helpers import collide_player, collide_sensors, reset_game, mouse_function
+from helpers import collide_player, collide_sensors, reset_game, mouse_function, create_random_position_for_ai
 from settings import LENGTH_SENSOR
-
-
-def update_and_draw_lines():
-    for sprite in sprite_group_sens:
-        if sprite.name in ("right", "down"):
-            sprite.rect.x = PLAYER.rect.centerx
-            sprite.rect.y = PLAYER.rect.centery
-        elif sprite.name == "left":
-            sprite.rect.x = PLAYER.rect.centerx-LENGTH_SENSOR
-            sprite.rect.y = PLAYER.rect.centery
-        elif sprite.name == "up":
-            sprite.rect.x = PLAYER.rect.centerx
-            sprite.rect.y = PLAYER.rect.centery-LENGTH_SENSOR
-
-        if sprite.name in global_list_sensors_colliding:
-            draw_lines(SCREEN, sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height, color="red")
-        else:
-            draw_lines(SCREEN, sprite.rect.x, sprite.rect.y, sprite.rect.width, sprite.rect.height)
 
 
 import pygame
@@ -69,24 +51,14 @@ class Robot(gym.Env):
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(5,), dtype=np.float64)
         
-        self.POSITION_TO_MOVE = (0,0)
         self.old_distance = 10000
+
+        self.POSITION_TO_MOVE = create_random_position_for_ai(list_group_boundarties_floor)
 
 
     def step(self, action):
         # action
-        if action == 0:
-            PLAYER.y -= 2
-            PLAYER.rect.y -= 2
-        elif action == 1:
-            PLAYER.y += 2
-            PLAYER.rect.y += 2
-        elif action == 2:
-            PLAYER.x += 2
-            PLAYER.rect.x += 2
-        elif action == 3:
-            PLAYER.x -= 2
-            PLAYER.rect.x -= 2
+        PLAYER.ai_move(action)
 
         # done variable
         self.terminated = False
@@ -96,15 +68,16 @@ class Robot(gym.Env):
         elif PLAYER.x < 0 and PLAYER.x > 1120:
             self.truncated = True
         
-
         # reward variable
         self.reward = 0
    
         x_goal, y_goal = self.POSITION_TO_MOVE
         if PLAYER.rect.centerx == x_goal and PLAYER.rect.centery == y_goal:
-            self.reward += 100
+            print("Goal reached")
+            self.reward += 1000
+            self.terminated = True # when the player has reached the goal, the episode terminates
         if collide_player(PLAYER, list_group_boundarties_floor):
-            self.reward -= 200
+            self.reward -= 100
 
         self.distance = np.linalg.norm(np.array([PLAYER.x, PLAYER.y]) - np.array([x_goal, y_goal]))
         if self.distance < self.old_distance:
@@ -115,20 +88,24 @@ class Robot(gym.Env):
 
 
         # update observation
-        self.observation = np.array([PLAYER.x, PLAYER.x, x_goal, y_goal, self.distance])
+        self.observation = np.array([PLAYER.rect.centerx, PLAYER.rect.centery, x_goal, y_goal, self.distance])
         self.info = {}
+
 
         return self.observation, self.reward, self.terminated, self.truncated, self.info
 
 
     def reset(self, seed=None, options=None):
         PLAYER.reset()
-        x_goal, y_goal = (0,0)
-        self.POSITION_TO_MOVE = (0,0)
+        self.POSITION_TO_MOVE = create_random_position_for_ai(list_group_boundarties_floor)
+        x_goal, y_goal = self.POSITION_TO_MOVE
         distance = np.linalg.norm(np.array([PLAYER.x, PLAYER.y]) - np.array([x_goal, y_goal]))
         
-        self.observation = np.array([PLAYER.x, PLAYER.x, x_goal, y_goal, distance])
+        self.observation = np.array([PLAYER.rect.centerx, PLAYER.rect.centery, x_goal, y_goal, distance])
         info = {}
+
+        print(PLAYER.x, PLAYER.y)
+
         return self.observation, info
 
 
@@ -141,25 +118,17 @@ class Robot(gym.Env):
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-            self.POSITION_TO_MOVE = mouse_function(event, list_group_boundarties_floor, SCREEN)
-
         SCREEN.blit(PLAYER.image, (PLAYER.x, PLAYER.y))
-        PLAYER.move()
 
-        update_and_draw_lines()
 
-        died = collide_player(PLAYER, list_group_boundarties_floor)
-        if died:
-            reset_game()
-
-        list_sensor_colliding = collide_sensors(sprite_group_sens, sprite_group_boundaries_floor)
-        global_list_sensors_colliding = list_sensor_colliding
+        print(f"Player x,y: ({PLAYER.rect.centerx}, {PLAYER.rect.centery}, GOAL x,y: ({self.POSITION_TO_MOVE[0], self.POSITION_TO_MOVE[1]}))")
 
         pygame.display.flip()
         pygame.display.update()
         CLOCK.tick(self.metadata["render_fps"])
 
 
-
-# TODO: create random points where the AI needs to go, then we simulates it with the click of the mouse
-    # function situated in helpers.py
+# TODO: works, but there are not boundaries, the AI doesn't care about boundaries (CHECK REWARDS)
+# TODO: init the pygame screen only if the render function is being called
+        
+# calculate the distance from the boundaries
