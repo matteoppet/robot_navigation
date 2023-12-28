@@ -3,11 +3,11 @@ import numpy as np
 from gymnasium import spaces
 
 # Game stuff imports
-from player import Player
-from world import World
-from sensors import create_sensors, draw_lines, sprite_group_sensors
-from helpers import collide_player, collide_sensors, reset_game, mouse_function, create_random_position_for_ai
-from settings import LENGTH_SENSOR
+from game.helpers.player import Player
+from game.helpers.world import World
+from game.helpers.sensors import create_sensors, draw_lines, sprite_group_sensors
+from game.helpers.helpers import collide_player, collide_sensors, reset_game, mouse_function, create_random_position_for_ai, create_table_tiles, calculate_distance_boundaries
+from game.helpers.settings import LENGTH_SENSOR
 
 
 import pygame
@@ -34,6 +34,9 @@ sprite_group_sens = sprite_group_sensors
 global_list_sensors_colliding = []
 
 
+TABLE_TILES = create_table_tiles(sprite_group_boundaries_floor)
+
+
 class Robot(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 60}
 
@@ -47,9 +50,13 @@ class Robot(gym.Env):
             3. position x goal (center of the rect)
             4. position y goal (center of the rect)
             5. distance from goal
+            6. sensor left
+            7. sensor right
+            8. sensor up
+            9. sensor down
         """
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
-                                            shape=(5,), dtype=np.float64)
+                                            shape=(9,), dtype=np.float64)
         
         self.old_distance = 10000
 
@@ -76,8 +83,9 @@ class Robot(gym.Env):
             print("Goal reached")
             self.reward += 1000
             self.terminated = True # when the player has reached the goal, the episode terminates
-        if collide_player(PLAYER, list_group_boundarties_floor):
+        if collide_player(PLAYER, list_group_boundarties_floor, "list"):
             self.reward -= 100
+            self.truncated = True
 
         self.distance = np.linalg.norm(np.array([PLAYER.x, PLAYER.y]) - np.array([x_goal, y_goal]))
         if self.distance < self.old_distance:
@@ -86,9 +94,24 @@ class Robot(gym.Env):
             self.reward -= 1
         self.old_distance = self.distance
 
+        direction_distance = {}
+        for direction in ["left", "right", "up", "down"]:
+            distance_boundarie = calculate_distance_boundaries(TABLE_TILES, PLAYER, direction)
+            direction_distance[direction] = distance_boundarie
 
         # update observation
-        self.observation = np.array([PLAYER.rect.centerx, PLAYER.rect.centery, x_goal, y_goal, self.distance])
+        self.observation = np.array(
+            [
+                PLAYER.rect.centerx, 
+                PLAYER.rect.centery, 
+                x_goal, 
+                y_goal, 
+                self.distance,
+                direction_distance["left"],
+                direction_distance["right"],
+                direction_distance["up"],
+                direction_distance["down"]
+            ])
         self.info = {}
 
 
@@ -99,12 +122,27 @@ class Robot(gym.Env):
         PLAYER.reset()
         self.POSITION_TO_MOVE = create_random_position_for_ai(list_group_boundarties_floor)
         x_goal, y_goal = self.POSITION_TO_MOVE
-        distance = np.linalg.norm(np.array([PLAYER.x, PLAYER.y]) - np.array([x_goal, y_goal]))
+        self.distance = np.linalg.norm(np.array([PLAYER.x, PLAYER.y]) - np.array([x_goal, y_goal]))
         
-        self.observation = np.array([PLAYER.rect.centerx, PLAYER.rect.centery, x_goal, y_goal, distance])
-        info = {}
+        direction_distance = {}
+        for direction in ["left", "right", "up", "down"]:
+            distance_boundarie = calculate_distance_boundaries(TABLE_TILES, PLAYER, direction)
+            direction_distance[direction] = distance_boundarie
 
-        print(PLAYER.x, PLAYER.y)
+        # update observation
+        self.observation = np.array(
+            [
+                PLAYER.rect.centerx, 
+                PLAYER.rect.centery, 
+                x_goal, 
+                y_goal, 
+                self.distance,
+                direction_distance["left"],
+                direction_distance["right"],
+                direction_distance["up"],
+                direction_distance["down"]
+            ])
+        info = {}
 
         return self.observation, info
 
@@ -119,9 +157,6 @@ class Robot(gym.Env):
                 pygame.quit()
 
         SCREEN.blit(PLAYER.image, (PLAYER.x, PLAYER.y))
-
-
-        print(f"Player x,y: ({PLAYER.rect.centerx}, {PLAYER.rect.centery}, GOAL x,y: ({self.POSITION_TO_MOVE[0], self.POSITION_TO_MOVE[1]}))")
 
         pygame.display.flip()
         pygame.display.update()
