@@ -57,11 +57,13 @@ def reset_game(player):
 def check_possible_position_to_go(position_mouse, sprites):
     pos_x, pos_y = position_mouse
 
-    temporary_rect = pygame.Rect(pos_x, pos_y, 10, 10)
+    temporary_rect = pygame.Rect(pos_x, pos_y, 5, 5)
 
     inside_boundaries = pygame.Rect.collidelist(temporary_rect, sprites)
 
     return inside_boundaries
+
+    # FIX IT
 
 
 def draw_circle_mouse(SCREEN, mouse_x, mouse_y, color):
@@ -75,13 +77,15 @@ def mouse_function(event, sprites, screen):
 
             is_possible = check_possible_position_to_go(position_mouse, sprites)
             if is_possible == -1:
-                print(f"Accessible, ZONE: x({position_mouse[0]}), y({position_mouse[1]})")
-                draw_circle_mouse(screen, position_mouse[0], position_mouse[1], "white")
-                return position_mouse
-            else:
                 print(f"Not accessible, ZONE: x({position_mouse[0]}), y({position_mouse[1]})")
                 draw_circle_mouse(screen, position_mouse[0], position_mouse[1], "red")
                 return (0,0)
+            else:
+                print(f"Accessible, ZONE: x({position_mouse[0]}), y({position_mouse[1]})")
+                draw_circle_mouse(screen, position_mouse[0], position_mouse[1], "white")
+                return position_mouse
+            
+    return (0,0)
             
 
 def create_random_position_for_ai(sprites):
@@ -97,7 +101,7 @@ def create_random_position_for_ai(sprites):
 
         valid = check_possible_position_to_go(position, sprites)
 
-        if valid == -1:
+        if valid != -1:
             r = False
             return position
         
@@ -120,32 +124,6 @@ def create_distance_sprites():
     return sprite_group_for_distance
 
 
-def s():
-    # TODO: 1) Fuori questa funzione creare una tabella, ogni record contiene la x e la y di ogni tile
-        # creare dictionary cosi:
-            # {
-                # "ogni quadrato": 
-                    # "x1": [tutte le x1]
-                    # "x2": [tutte le x2] aggiungere 32
-                    # "y1": [tutte le y1]
-                    # "y2": [tutte le y2] aggiungere 32
-            # }
-
-    # TODO: 2) Controllare i 4 lati
-        
-        # LEFT LATO
-            # RIPETERE QUESTO PROCESSO PER L'ANGOLO IN ALTO E IN BASSO A SINISTRA: 
-            # LA DISTANZA MINORE CHE ESCE TRA I DUE è QUELLO DA PRENDERE IN CONSIDERAZIONE
-
-                # TODO: 3) prendere coordinate player, guardare se la y del player è maggiore/uguale di Yb1 e minore/uguale di Yb2
-                # se si, calcolare distanza orizzontale (Xp - (Xb+32))
-    
-    ...
-
-
-    # IN TILE, TENERE SOLO I TILE VICINO LA STRADA COME BOUNDARIES GRASS COSI DA DIMINUIRE LA PESANTEZZA DELLA TABELLA
-
-
 def create_table_tiles(sprite_tiles):
     table = {} # total 175 tiles
 
@@ -160,88 +138,63 @@ def create_table_tiles(sprite_tiles):
     return table
 
 
+def calculation_distance_left(player_x, player_y, table):
+    topleft = [nested_dict['x2'] for nested_dict in table.values() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
+    distance_topleft = player_x - max(topleft)
+    bottomleft = [nested_dict['x2'] for nested_dict in table.values() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
+    distance_bottomelft = player_x - max(bottomleft)
+
+    return min(distance_topleft, distance_bottomelft)
+    
+
+def calculation_distance_right(player_x, player_y, table):
+    topright = [nested_dict['x1'] for nested_dict in table.values() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
+    distance_topright = min(topright) - (player_x+20)
+    bottomright = [nested_dict['x1'] for nested_dict in table.values() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
+    distance_bottomright = min(bottomright) - (player_x+20)
+
+    return min(distance_topright, distance_bottomright)
+    
+
+def calculation_distance_up(player_x, player_y, table):
+    leftup = [nested_dict['y2'] for nested_dict in table.values() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
+    distance_leftup = player_y - max(leftup)
+    rightup = [nested_dict['y2'] for nested_dict in table.values() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
+    distance_rightup = player_y - max(rightup)
+
+    return min(distance_leftup, distance_rightup)
+
+
+def calculation_distance_down(player_x, player_y, table):
+    leftdown = [nested_dict['y1'] for nested_dict in table.values() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
+    distance_leftdown = min(leftdown) - (player_y+20)
+    rightdown = [nested_dict['y1'] for nested_dict in table.values() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
+    distance_rightdown = min(rightdown) - (player_y+20)
+
+    return min(distance_leftdown, distance_rightdown)
+
+
 def calculate_distance_boundaries(table, player, direction):
     player_x = player.rect.x
     player_y = player.rect.y
 
-    distance_topleft = 10000
-    distance_bottomleft = 10000 
+    table = table
 
-    distance_topright = 10000
-    distance_bottomright = 10000 
+    try:
+        if direction == "left":
+            return calculation_distance_left(player_x, player_y, table)
+            
+        elif direction == "right":
+            return calculation_distance_right(player_x, player_y, table)
+            
+        elif direction == "up":
+            return calculation_distance_up(player_x, player_y, table)
 
-    distance_top_1 = 10000
-    distance_top_2 = 10000
+        elif direction == "down":
+            return calculation_distance_down(player_x, player_y, table)
+        
+    except KeyError:
+        raise KeyError("Index in the dictionary (table) not found. No tile corresponding.")
+        
 
-    distance_bottom_1 = 10000 
-    distance_bottom_2 = 10000
-
-    index_tile_y1_left = 0
-    index_tile_y2_left = 0
-
-    index_tile_y1_right = 0
-    index_tile_y2_right = 0
-
-    index_tile_x1_up = 0
-    index_tile_x2_up = 0
-
-    index_tile_x1_down = 0
-    index_tile_x2_down = 0
-
-    r = True
-    while r:
-        try:
-            if direction == "left":
-
-                if player_y >= table[index_tile_y1_left]["y1"] and player_y <= table[index_tile_y1_left]["y2"]:    
-                    distance_topleft = player_x - (table[index_tile_y1_left]["x2"])
-                else: index_tile_y1_left += 1
-
-                if player_y+32 >= table[index_tile_y2_left]["y1"] and player_y+32 <= table[index_tile_y2_left]["y2"]:
-                    distance_bottomleft = player_x - (table[index_tile_y2_left]["x2"])
-                else: index_tile_y2_left += 1
-
-                if distance_bottomleft != 10000 and distance_topleft != 10000:
-                    r = False
-                    return min(distance_topleft, distance_bottomleft)
-                
-            elif direction == "right":
-                if player_y >= table[index_tile_y1_right]["y1"] and player_y <= table[index_tile_y1_right]["y2"] and player_x <= table[index_tile_y1_right]["x1"]:
-                    distance_topright = table[index_tile_y1_right]["x1"] - (player_x+32)
-                else: index_tile_y1_right += 1
-
-                if player_y+32 >= table[index_tile_y2_right]["y1"] and player_y+32 <= table[index_tile_y2_right]["y2"] and player_x <= table[index_tile_y2_right]["x2"]:
-                    distance_bottomright = table[index_tile_y2_right]["x1"] - (player_x+32)
-                else: index_tile_y2_right += 1
-
-                if distance_bottomright != 10000 and distance_topright != 10000:
-                    r = False
-                    return min(distance_topright, distance_bottomright)
-                
-            elif direction == "up":
-                if player_x >= table[index_tile_x1_up]["x1"] and player_x <= table[index_tile_x1_up]["x2"] and player_y >= table[index_tile_x1_up]["y2"]:
-                    distance_top_1 = player_y - table[index_tile_x1_up]["y2"]
-                else: index_tile_x1_up += 1
-
-                if player_x+32 >= table[index_tile_x2_up]["x1"] and player_x+32 <= table[index_tile_x2_up]["x2"] and player_y >= table[index_tile_x2_up]["y2"]:
-                    distance_top_2 = player_y - table[index_tile_x2_up]["y2"]
-                else: index_tile_x2_up += 1
-                    
-                if distance_top_1 != 10000 and distance_top_2 != 10000:
-                    r = False
-                    return min(distance_top_1, distance_top_2)
-
-            elif direction == "down":
-                if player_x >= table[index_tile_x1_down]["x1"] and player_x <= table[index_tile_x1_down]["x2"] and (player_y+32) <= table[index_tile_x1_down]["y1"]:
-                    distance_bottom_1 = table[index_tile_x1_down]["y1"] - (player_y+32)
-                else: index_tile_x1_down += 1
-
-                if player_x+32 >= table[index_tile_x2_down]["x1"] and player_x+32 <= table[index_tile_x2_down]["x2"] and (player_y+32) <= table[index_tile_x2_down]["y1"]:
-                    distance_bottom_2 = table[index_tile_x2_down]["y1"] - (player_y+32)
-                else: index_tile_x2_down += 1
-
-                if distance_bottom_1 != 10000 and distance_bottom_2 != 10000:
-                    r = False
-                    return min(distance_bottom_1, distance_bottom_2)
-        except KeyError:
-            raise KeyError("Index in the dictionary (table) not found. No tile corresponding.")
+# GET THE LESS FAR 

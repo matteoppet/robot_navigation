@@ -9,8 +9,8 @@ class Player(pygame.sprite.Sprite):
         self.y = 100
 
         # width and height player
-        self.width = 32
-        self.height = 32
+        self.width = 20
+        self.height = 20
 
         self.image = pygame.image.load("../assets/images/player/player_front.png") # default image
         self.rect = pygame.Rect(100, 100, self.width, self.height)
