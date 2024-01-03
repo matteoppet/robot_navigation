@@ -5,15 +5,15 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         # position player
-        self.x = 100
-        self.y = 100
+        self.x = 222
+        self.y = 905
 
         # width and height player
         self.width = 20
         self.height = 20
 
         self.image = pygame.image.load("../assets/images/player/player_front.png") # default image
-        self.rect = pygame.Rect(100, 100, self.width, self.height)
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
@@ -55,7 +55,9 @@ class Player(pygame.sprite.Sprite):
             self.rect.x -= 2
 
     def reset(self):
-        self.x = self.y = 100
-        self.rect.x = self.rect.y = 100
+        self.x = 222
+        self.y = 905
+        self.rect.x = self.x
+        self.rect.y = self.y
 
         return self.x, self.y

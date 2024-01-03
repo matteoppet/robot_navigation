@@ -13,7 +13,7 @@ env = Robot()
 #         env.render()
 
 
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN, A2C
 import os
 import time
 
@@ -28,7 +28,7 @@ if not os.path.exists(logs_dir):
 	
 env.reset()
 
-model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
+model = PPO("MlpPolicy", env, gamma=0.8, verbose=1, tensorboard_log=logs_dir)
 
 TIMESTEPS = 10000
 iters = 0
@@ -36,5 +36,3 @@ while True:
 	iters += 1
 	model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
 	model.save(f"{models_dir}/{TIMESTEPS*iters}")
-	
-# how to use render

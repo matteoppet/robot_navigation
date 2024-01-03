@@ -12,7 +12,7 @@ class Tile(pygame.sprite.Sprite):
 
 class World:
     def __init__(self):
-        self.tmx_data = load_pygame("../assets/tsx/basic.tmx")
+        self.tmx_data = load_pygame("../assets/tsx/basic_3.tmx")
 
         self.sprite_group = pygame.sprite.Group()
         self.sprite_group_objects = pygame.sprite.Group()

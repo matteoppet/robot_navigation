@@ -9,13 +9,14 @@ from stable_baselines3 import PPO
 pygame.init()
 SCREEN = pygame.display.set_mode((1120, 992))
 CLOCK = pygame.time.Clock()
+FONT = pygame.font.SysFont("jetbrainsmono", 14)
 
 # world section
 WORLD = World()
 WORLD.create_tiles() 
-WORLD.create_objects()
+# WORLD.create_objects()
 sprite_group = WORLD.sprite_group
-sprite_group_objects = WORLD.sprite_group_objects
+# sprite_group_objects = WORLD.sprite_group_objects
 sprite_group_boundaries_floor = WORLD.sprite_group_boundaries_floor
 list_group_boundarties_floor = [sprite for sprite in sprite_group_boundaries_floor]
 
@@ -35,8 +36,8 @@ sprite_group_for_distance = create_distance_sprites()
 
 goal_position = (0,0)
 
-models_dir = "models/1703967944"
-model_path = f"{models_dir}/300000.zip"
+models_dir = "models/1704211315"
+model_path = f"{models_dir}/600000.zip"
 model = PPO.load(model_path)
 
 running = True
@@ -67,13 +68,10 @@ while running:
         distance = calculate_distance_boundaries(TABLE_TILES, PLAYER, direction)
         direction_distance[direction] = distance
 
-    #print(pygame.font.get_fonts())
-
-    font = pygame.font.SysFont("jetbrainsmono", 14)
-    left_text = font.render(f"{direction_distance['left']}", True, "red")
-    right_text = font.render(f"{direction_distance['right']}", True, "red")
-    up_text = font.render(f"{direction_distance['up']}", True, "red")
-    down_text = font.render(f"{direction_distance['down']}", True, "red")
+    left_text = FONT.render(f"{direction_distance['left']}", True, "red")
+    right_text = FONT.render(f"{direction_distance['right']}", True, "red")
+    up_text = FONT.render(f"{direction_distance['up']}", True, "red")
+    down_text = FONT.render(f"{direction_distance['down']}", True, "red")
     SCREEN.blit(left_text, (PLAYER.x - 20, PLAYER.y +16))
     SCREEN.blit(right_text, (PLAYER.x + 30, PLAYER.y +16))
     SCREEN.blit(up_text, (PLAYER.x +4, PLAYER.y -20))
@@ -102,4 +100,6 @@ while running:
     CLOCK.tick(60)
 
 
-# some problem with sensors, adjust that
+# implement a coordinate find in th game, and readjust the coordinate goal
+    
+# CTRL + SHIFT + P

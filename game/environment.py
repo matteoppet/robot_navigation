@@ -13,6 +13,7 @@ import pygame
 pygame.init()
 SCREEN = pygame.display.set_mode((1120, 992))
 CLOCK = pygame.time.Clock()
+FONT = pygame.font.SysFont("jetbrainsmono", 14)
 
 # world section
 WORLD = World()
@@ -34,29 +35,17 @@ TABLE_TILES = create_table_tiles(sprite_group_boundaries_floor)
 
 class Goal(pygame.sprite.Sprite):
     def __init__(self):
-        self.POSITIONS_TO_MOVE = [
-            (181, 188), 
-            (276, 309), 
-            (304, 475), 
-            (92, 449), 
-            (476, 447), 
-            (369, 621), 
-            (579, 589), 
-            (973, 455), 
-            (569, 517), 
-            (579, 787)]
         self.index = 0
 
-        self.x, self.y = self.POSITIONS_TO_MOVE[self.index]
+        self.x, self.y = create_random_position_for_ai(list_group_path)
 
         self.image = pygame.Surface((20, 20))
         self.rect = pygame.Rect(self.x, self.y, 20, 20)
         self.mask = pygame.mask.from_surface(self.image)
 
     def next_goal(self):
-        self.index += 1
-        self.x, self.y = self.POSITIONS_TO_MOVE[self.index]
-        self.rect.x, self.rect.y = self.POSITIONS_TO_MOVE[self.index]
+        self.x, self.y = create_random_position_for_ai(list_group_path)
+        self.rect.x, self.rect.y = self.x, self.y
 
 
 GOAL = Goal()
@@ -69,17 +58,6 @@ class Robot(gym.Env):
         super().__init__()
 
         self.action_space = spaces.Discrete(4)
-        """
-            1. position x (center of the rect)
-            2. position y (center of the rect)
-            3. position x goal (center of the rect)
-            4. position y goal (center of the rect)
-            5. distance from goal
-            6. sensor left
-            7. sensor right
-            8. sensor up
-            9. sensor down
-        """
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(9,), dtype=np.float64)
         
@@ -110,67 +88,88 @@ class Robot(gym.Env):
             self.truncated = True
         
         # reward variable
-        self.reward = 0
-
-        collision = pygame.sprite.collide_rect(PLAYER, GOAL)
-        if collision:
-            print("Goal reached")
-            self.reward += 1000
-            # self.terminated = True # when the player has reached the goal, the episode terminates
-            GOAL.next_goal()
-        if collide_player(PLAYER, list_group_boundarties_floor, "list"):
-            self.reward -= 100
-            self.truncated = True
-
-        self.distance = np.linalg.norm(np.array([PLAYER.rect.centerx, PLAYER.rect.centery]) - np.array([GOAL.x, GOAL.y]))
-        if self.distance < self.old_distance:
-            self.reward += 1
-        else:
-            self.reward = -1
-        self.old_distance = self.distance
+        self.distance = pygame.math.Vector2(PLAYER.rect.centerx, PLAYER.rect.centery).distance_to((GOAL.x, GOAL.y))
+        self.reward, self.terminated = self.reward_function(self.distance)
 
         direction_distance = {}
         for direction in ["left", "right", "up", "down"]:
             distance_boundarie = calculate_distance_boundaries(TABLE_TILES, PLAYER, direction)
             direction_distance[direction] = distance_boundarie
 
-        font = pygame.font.SysFont(None, 20)
-        left_text = font.render(f"{direction_distance['left']}", True, "red")
-        right_text = font.render(f"{direction_distance['right']}", True, "red")
-        up_text = font.render(f"{direction_distance['up']}", True, "red")
-        down_text = font.render(f"{direction_distance['down']}", True, "red")
+        self.direction_distance_texts(direction_distance)
+
+        # update observation
+        self.observation = self.get_observation(direction_distance)
+        self.info = {}
+
+        pygame.display.flip()
+        pygame.display.update()
+        CLOCK.tick(self.metadata["render_fps"])
+ 
+        return self.observation, self.reward, self.terminated, self.truncated, self.info
+    
+
+    def reward_function(self, distance_from_goal):
+        COLLISION_PENALTY = -10.0
+        GOAL_REWARD = 100.0
+        DISTANCE_PENALTY_WEIGHT = 0.01
+
+        goal_reached = pygame.sprite.collide_rect(PLAYER, GOAL)
+        if goal_reached:
+            GOAL.next_goal()
+            return GOAL_REWARD, False # The false return is for the self.terminated variable
+
+        collision_boundaries = collide_player(PLAYER, list_group_boundarties_floor, "list")
+        if collision_boundaries:
+            return COLLISION_PENALTY, True # The true return is for the self.terminated variable
+        
+        distance_penalty = -DISTANCE_PENALTY_WEIGHT * distance_from_goal
+        total_reward = GOAL_REWARD + distance_penalty
+
+        return total_reward, False # The false return is for the self.terminated variable
+
+
+    def get_observation(self, direction_distance):
+        """
+            1. position x (center of the rect)
+            2. position y (center of the rect)
+            3. position x goal (center of the rect)
+            4. position y goal (center of the rect)
+            5. distance from goal
+            6. sensor left
+            7. sensor right
+            8. sensor up
+            9. sensor down
+        """
+        observation = np.array(
+            [
+                PLAYER.rect.centerx, 
+                PLAYER.rect.centery, 
+                GOAL.x, 
+                GOAL.y, 
+                self.distance,
+                direction_distance["left"],
+                direction_distance["right"],
+                direction_distance["up"],
+                direction_distance["down"]
+            ])
+        return observation
+
+
+    def direction_distance_texts(self, direction_distance):
+        left_text = FONT.render(f"{direction_distance['left']}", True, "red")
+        right_text = FONT.render(f"{direction_distance['right']}", True, "red")
+        up_text = FONT.render(f"{direction_distance['up']}", True, "red")
+        down_text = FONT.render(f"{direction_distance['down']}", True, "red")
         SCREEN.blit(left_text, (PLAYER.x - 20, PLAYER.y +16))
         SCREEN.blit(right_text, (PLAYER.x + 30, PLAYER.y +16))
         SCREEN.blit(up_text, (PLAYER.x +4, PLAYER.y -20))
         SCREEN.blit(down_text, (PLAYER.x + 4, PLAYER.y +50))
 
 
-        # update observation
-        self.observation = np.array(
-            [
-                PLAYER.rect.centerx, 
-                PLAYER.rect.centery, 
-                GOAL.x, 
-                GOAL.y, 
-                self.distance,
-                direction_distance["left"],
-                direction_distance["right"],
-                direction_distance["up"],
-                direction_distance["down"]
-            ])
-        self.info = {}
-
-
-        pygame.display.flip()
-        pygame.display.update()
-        CLOCK.tick(self.metadata["render_fps"])
-
-        return self.observation, self.reward, self.terminated, self.truncated, self.info
-
-
     def reset(self, seed=None, options=None):
         PLAYER.reset()
-        self.distance = np.linalg.norm(np.array([PLAYER.rect.centerx, PLAYER.rect.centery]) - np.array([GOAL.x, GOAL.y]))
+        self.distance = pygame.math.Vector2(PLAYER.rect.centerx, PLAYER.rect.centery).distance_to((GOAL.x, GOAL.y))
 
         direction_distance = {}
         for direction in ["left", "right", "up", "down"]:
@@ -178,18 +177,7 @@ class Robot(gym.Env):
             direction_distance[direction] = distance_boundarie
 
         # update observation
-        self.observation = np.array(
-            [
-                PLAYER.rect.centerx, 
-                PLAYER.rect.centery, 
-                GOAL.x, 
-                GOAL.y, 
-                self.distance,
-                direction_distance["left"],
-                direction_distance["right"],
-                direction_distance["up"],
-                direction_distance["down"]
-            ])
+        self.observation = self.get_observation(direction_distance)
         info = {}
 
         return self.observation, info

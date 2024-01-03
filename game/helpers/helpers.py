@@ -57,13 +57,11 @@ def reset_game(player):
 def check_possible_position_to_go(position_mouse, sprites):
     pos_x, pos_y = position_mouse
 
-    temporary_rect = pygame.Rect(pos_x, pos_y, 5, 5)
+    temporary_rect = pygame.Rect(pos_x, pos_y, 20, 20)
 
     inside_boundaries = pygame.Rect.collidelist(temporary_rect, sprites)
 
     return inside_boundaries
-
-    # FIX IT
 
 
 def draw_circle_mouse(SCREEN, mouse_x, mouse_y, color):
@@ -182,19 +180,25 @@ def calculate_distance_boundaries(table, player, direction):
 
     try:
         if direction == "left":
-            return calculation_distance_left(player_x, player_y, table)
+            number = calculation_distance_left(player_x, player_y, table)
+            if number == None: return 0
+            else: return number
             
         elif direction == "right":
-            return calculation_distance_right(player_x, player_y, table)
+            number = calculation_distance_right(player_x, player_y, table)
+            if number == None: return 0
+            else: return number
             
         elif direction == "up":
-            return calculation_distance_up(player_x, player_y, table)
-
+            number = calculation_distance_up(player_x, player_y, table)
+            if number == None: return 0
+            else: return number
+        
         elif direction == "down":
-            return calculation_distance_down(player_x, player_y, table)
+            number = calculation_distance_down(player_x, player_y, table)
+            if number == None: return 0
+            else: return number
         
-    except KeyError:
-        raise KeyError("Index in the dictionary (table) not found. No tile corresponding.")
+    except ValueError:
+        return 0
         
-
-# GET THE LESS FAR 
