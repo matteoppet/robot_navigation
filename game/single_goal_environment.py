@@ -60,7 +60,6 @@ class RobotWorld(gym.Env):
                     dtype=np.float64)
             }
         )
-
         # actions: "up", "down", "left", "right"
         self.action_space = spaces.Discrete(4)
 
@@ -100,8 +99,9 @@ class RobotWorld(gym.Env):
         }
 
 
+    # if want return something, add to the dict and change the name of the fuction to "_get_info"
     def _get_distance_info(self):
-        return {"distance": np.linalg.norm(np.array([self._agent_location[0], self._agent_location[1]]) - np.array([self._target_location[0], self._target_location[1]]), ord=1)}
+        return {"distance": np.linalg.norm(np.array([self._agent_location[0], self._agent_location[1]]) - np.array([self._target_location[0], self._target_location[1]]), axis=-1)}
 
 
     def random_agent_location(self, boundaries):
@@ -189,8 +189,6 @@ class RobotWorld(gym.Env):
     def step(self, action):
         self.PLAYER.ai_move(action)
 
-        self._sensor_left = {}
-
         # episode terminated if there is a collision or the agent reach the goal
         terminated = False
         agent_crashed = self.collision_agent(self.PLAYER, LIST_GROUP_BOUNDARIES)
@@ -255,5 +253,10 @@ LIST_GROUP_PATH = [sprite for sprite in SPRITE_GROUP_PATH]
 TABLE_TILES = create_table_tiles(SPRITE_GROUP_BOUNDARIES)
 
 
+############ REMINDERS
 # train this agent
 # random position agent not used
+# observation EXCEPT DISTANCE all works
+
+############ PROBLEMS: 
+# distance agent-goal not updated
