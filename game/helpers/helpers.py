@@ -2,6 +2,7 @@ import pygame
 from pytmx.util_pygame import load_pygame
 import time
 import random 
+import numpy as np
 
 def collide_player(player, target, type):
 
@@ -136,40 +137,77 @@ def create_table_tiles(sprite_tiles):
     return table
 
 
-def calculation_distance_left(player_x, player_y, table):
-    topleft = [nested_dict['x2'] for nested_dict in table.values() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
-    distance_topleft = player_x - max(topleft)
-    bottomleft = [nested_dict['x2'] for nested_dict in table.values() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
-    distance_bottomelft = player_x - max(bottomleft)
+# def calculation_distance_left(player_x, player_y, table):
+#     topleft = [nested_dict['x2'] for nested_dict in table.values() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
+#     distance_topleft = player_x - max(topleft)
+#     bottomleft = [nested_dict['x2'] for nested_dict in table.values() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
+#     distance_bottomelft = player_x - max(bottomleft)
 
-    return min(distance_topleft, distance_bottomelft)
+#     return min(distance_topleft, distance_bottomelft)
     
 
-def calculation_distance_right(player_x, player_y, table):
-    topright = [nested_dict['x1'] for nested_dict in table.values() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
-    distance_topright = min(topright) - (player_x+20)
-    bottomright = [nested_dict['x1'] for nested_dict in table.values() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
-    distance_bottomright = min(bottomright) - (player_x+20)
+# def calculation_distance_right(player_x, player_y, table):
+#     topright = [nested_dict['x1'] for nested_dict in table.values() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
+#     distance_topright = min(topright) - (player_x+20)
+#     bottomright = [nested_dict['x1'] for nested_dict in table.values() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
+#     distance_bottomright = min(bottomright) - (player_x+20)
 
-    return min(distance_topright, distance_bottomright)
+#     return min(distance_topright, distance_bottomright)
     
 
-def calculation_distance_up(player_x, player_y, table):
-    leftup = [nested_dict['y2'] for nested_dict in table.values() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
-    distance_leftup = player_y - max(leftup)
-    rightup = [nested_dict['y2'] for nested_dict in table.values() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
-    distance_rightup = player_y - max(rightup)
+# def calculation_distance_up(player_x, player_y, table):
+#     leftup = [nested_dict['y2'] for nested_dict in table.values() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
+#     distance_leftup = player_y - max(leftup)
+#     rightup = [nested_dict['y2'] for nested_dict in table.values() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
+#     distance_rightup = player_y - max(rightup)
 
-    return min(distance_leftup, distance_rightup)
+#     return min(distance_leftup, distance_rightup)
 
 
-def calculation_distance_down(player_x, player_y, table):
-    leftdown = [nested_dict['y1'] for nested_dict in table.values() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
-    distance_leftdown = min(leftdown) - (player_y+20)
-    rightdown = [nested_dict['y1'] for nested_dict in table.values() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
-    distance_rightdown = min(rightdown) - (player_y+20)
+# def calculation_distance_down(player_x, player_y, table):
+#     leftdown = [nested_dict['y1'] for nested_dict in table.values() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
+#     distance_leftdown = min(leftdown) - (player_y+20)
+#     rightdown = [nested_dict['y1'] for nested_dict in table.values() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
+#     distance_rightdown = min(rightdown) - (player_y+20)
 
-    return min(distance_leftdown, distance_rightdown)
+#     return min(distance_leftdown, distance_rightdown)
+
+
+
+
+
+def get_tile_index_left(player_x, player_y, table):
+    topleft = [k for k, nested_dict in table.items() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
+    tile_less_far_1 = max(topleft)
+    bottomleft = [k for k, nested_dict in table.items() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x >= nested_dict["x2"]]
+    tile_less_far_2 = max(bottomleft)
+
+    return tile_less_far_1, tile_less_far_2
+
+def get_tile_index_right(player_x, player_y, table):
+    topleft = [k for k, nested_dict in table.items() if player_y >= nested_dict["y1"] and player_y <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
+    tile_less_far_1 = min(topleft)
+    bottomleft = [k for k, nested_dict in table.items() if (player_y+20) >= nested_dict["y1"] and (player_y+20) <= nested_dict["y2"] and player_x <= nested_dict["x1"]]
+    tile_less_far_2 = min(bottomleft)
+
+    return tile_less_far_1, tile_less_far_2
+
+def get_tile_index_up(player_x, player_y, table):
+    topleft = [k for k, nested_dict in table.items() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
+    tile_less_far_1 = max(topleft)
+    bottomleft = [k for k, nested_dict in table.items() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and player_y >= nested_dict["y2"]]
+    tile_less_far_2 = max(bottomleft)
+
+    return tile_less_far_1, tile_less_far_2
+
+def get_tile_index_down(player_x, player_y, table):
+    topleft = [k for k, nested_dict in table.items() if player_x >= nested_dict["x1"] and player_x <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
+    tile_less_far_1 = min(topleft)
+    bottomleft = [k for k, nested_dict in table.items() if (player_x+20) >= nested_dict["x1"] and (player_x+20) <= nested_dict["x2"] and (player_y+20) <= nested_dict["y2"]]
+    tile_less_far_2 = min(bottomleft)
+
+    return tile_less_far_1, tile_less_far_2
+
 
 
 def calculate_distance_boundaries(table, player, direction):
@@ -180,25 +218,54 @@ def calculate_distance_boundaries(table, player, direction):
 
     try:
         if direction == "left":
-            number = calculation_distance_left(player_x, player_y, table)
-            if number == None: return 0
-            else: return number
-            
+            index_tile_1, index_tile_2 = get_tile_index_left(player_x, player_y, table)
+
+            coord1_tile_index1 = table[index_tile_1]["x2"]
+            coord1_tile_index2 = table[index_tile_2]["x2"]
+
+            # get the distance from the top and bottom side of the player
+            distance_index_1 = np.linalg.norm(np.array([player_x, player_y]) - np.array([coord1_tile_index1, player_y]), axis=-1)
+            distance_index_2 = np.linalg.norm(np.array([player_x, player_y+20]) - np.array([coord1_tile_index2, player_y+20]), axis=-1)
+
+            return distance_index_1, distance_index_2, index_tile_1, index_tile_2
+
         elif direction == "right":
-            number = calculation_distance_right(player_x, player_y, table)
-            if number == None: return 0
-            else: return number
+            index_tile_1, index_tile_2 = get_tile_index_right(player_x, player_y, table)
+
+            coord1_tile_index1 = table[index_tile_1]["x1"]
+            coord1_tile_index2 = table[index_tile_2]["x1"]
+
+            distance_index_1 = np.linalg.norm(np.array([coord1_tile_index1, player_y]) - np.array([player_x+20, player_y]), axis=-1)
+            distance_index_2 = np.linalg.norm(np.array([coord1_tile_index2, player_y+20]) - np.array([player_x+20, player_y+20]), axis=-1)
+
+            return distance_index_1, distance_index_2, index_tile_1, index_tile_2
             
         elif direction == "up":
-            number = calculation_distance_up(player_x, player_y, table)
-            if number == None: return 0
-            else: return number
+            index_tile_1, index_tile_2 = get_tile_index_up(player_x, player_y, table)
+            
+            coord1_tile_index1 = table[index_tile_1]["y2"]
+            coord1_tile_index2 = table[index_tile_2]["y2"]
+
+            distance_index_1 = np.linalg.norm(np.array([player_x, player_y]) - np.array([player_x, coord1_tile_index1]), axis=-1)
+            distance_index_2 = np.linalg.norm(np.array([player_x+20, player_y]) - np.array([player_x+20, coord1_tile_index2]), axis=-1)
+
+            return distance_index_1, distance_index_2, index_tile_1, index_tile_2
         
         elif direction == "down":
-            number = calculation_distance_down(player_x, player_y, table)
-            if number == None: return 0
-            else: return number
+            index_tile_1, index_tile_2 = get_tile_index_down(player_x, player_y, table)
+
+            coord1_tile_index1 = table[index_tile_1]["y1"]
+            coord1_tile_index2 = table[index_tile_2]["y1"]
+
+            distance_index_1 = np.linalg.norm(np.array([player_x, coord1_tile_index1]) - np.array([player_x, player_y+20]), axis=-1)
+            distance_index_2 = np.linalg.norm(np.array([player_x+20, coord1_tile_index1]) - np.array([player_x+20, player_y+20]), axis=-1)
+
+            return distance_index_1, distance_index_2, index_tile_1, index_tile_2
         
     except ValueError:
         return 0
+    
+
+    # FIX LATER error 1 tile only boundarie
+    # for now just adapted the map
         

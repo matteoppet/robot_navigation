@@ -5,8 +5,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         # position player
-        self.x = 222
-        self.y = 905
+        self.x = 975
+        self.y = 150
 
         # width and height player
         self.width = 20
@@ -55,8 +55,8 @@ class Player(pygame.sprite.Sprite):
             self.rect.x -= 2
 
     def reset(self):
-        self.x = 222
-        self.y = 905
+        self.x = 975
+        self.y = 130
         self.rect.x = self.x
         self.rect.y = self.y
 
