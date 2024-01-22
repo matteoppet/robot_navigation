@@ -1,0 +1,5 @@
+stable_baselines3
+gym
+tensorflow
+pygame
+pytmx

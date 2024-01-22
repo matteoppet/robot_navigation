@@ -53,11 +53,3 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.image.load("../assets/images/player/player_left.png")
             self.x -= 2
             self.rect.x -= 2
-
-    def reset(self):
-        self.x = 975
-        self.y = 130
-        self.rect.x = self.x
-        self.rect.y = self.y
-
-        return self.x, self.y
