@@ -187,7 +187,7 @@ class RobotWorld(gym.Env):
             reward = -200.0
 
         if goal_reached:
-            reward = 100.0
+            reward = 1000.0
             self.generatation_positions(target="goal")
         return reward
 

@@ -1,7 +1,5 @@
 import sys
 import os
-
-# Assuming current_file.py is located in training_agent directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 
@@ -28,7 +26,7 @@ if not os.path.exists(logs_dir):
 
 
 #### Setup env
-env = RobotWorld(render_mode="human")
+env = RobotWorld(render_mode=None)
 # vectorize environment
 n_cpu = 6
 env = DummyVecEnv([lambda: env])
