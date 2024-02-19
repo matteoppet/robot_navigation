@@ -11,10 +11,10 @@ class Player(Sprite):
         # INFO: work with position on the center of the rectangle
         # INFO: player size: 16x16 pixels
         initial_pos = (32, 32)
-        size = (16, 16)
+        size = (32, 32)
         
         self.image = Surface((size))
-        self.rect = Rect(*initial_pos, 16, 16)
+        self.rect = self.image.get_rect(topleft=initial_pos)
         self.mask = mask.from_surface(self.image)
 
     def update(self, action): 
@@ -29,14 +29,12 @@ class Player(Sprite):
         elif action == 3: # right
             self.rect.x += speed_player
 
-    def generate_position(self, path):
-        list_sprites = [sprite for sprite in path]
-        random_tile = np.random.choice(list_sprites)
-        center_pos_x = random_tile.rect.centerx
-        center_pos_y = random_tile.rect.centery
+    def generate_position(self, ground):
+        list_ground = [sprite for sprite in ground]
 
-        self.rect.centerx = center_pos_x
-        self.rect.centery = center_pos_y
+        random_ground_tile = np.random.choice(list_ground)
+        
+        self.rect.center = random_ground_tile.rect.center
 
 
     def collision(self, obstacles):

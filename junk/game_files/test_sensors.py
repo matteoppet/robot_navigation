@@ -8,7 +8,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         pos = (300, 200)
-        size = (16, 16)
+        size = (32, 32)
         
         self.player_speed = 2
 
@@ -92,12 +92,12 @@ def lines_data():
     pos_start_x = PLAYER.rect.centerx
     pos_start_y = PLAYER.rect.centery
 
-    section_1_end = 90
-    section_2_end = 65
-    section_3_end_type1 = 80
-    section_3_end_type2 = 35
+    section_1_end = 120
+    section_2_end = 85
+    section_3_end_type1 = 110
+    section_3_end_type2 = 40
 
-    width_height_player = 9
+    width_height_player = 16
 
     return {
         "right": {"pos_start": (pos_start_x+width_height_player, pos_start_y), "pos_end": (PLAYER.rect.centerx+section_1_end, PLAYER.rect.centery)},
@@ -110,14 +110,14 @@ def lines_data():
         "diagonal-down-right": {"pos_start": (pos_start_x+width_height_player, pos_start_y+width_height_player), "pos_end": (PLAYER.rect.centerx+section_2_end, PLAYER.rect.centery+section_2_end)},
         "diagonal-down-left": {"pos_start": (pos_start_x-width_height_player, pos_start_y+width_height_player), "pos_end": (PLAYER.rect.centerx-section_2_end, PLAYER.rect.centery+section_2_end)},
 
-        "diagonal-up-up-right": {"pos_start": (pos_start_x+width_height_player, pos_start_y-width_height_player), "pos_end": (PLAYER.rect.centerx+section_3_end_type2, PLAYER.rect.centery-section_3_end_type1)},
-        "diagonal-up-up-left": {"pos_start": (pos_start_x-width_height_player, pos_start_y-width_height_player), "pos_end": (PLAYER.rect.centerx-section_3_end_type2, PLAYER.rect.centery-section_3_end_type1)},
-        "diagonal-right-right-up": {"pos_start": (pos_start_x+width_height_player, pos_start_y), "pos_end": (PLAYER.rect.centerx+section_3_end_type1, PLAYER.rect.centery-section_3_end_type2)},
-        "diagonal-right-right-down": {"pos_start": (pos_start_x+width_height_player, pos_start_y), "pos_end": (PLAYER.rect.centerx+section_3_end_type1, PLAYER.rect.centery+section_3_end_type2)},
-        "diagonal-left-left-up": {"pos_start": (pos_start_x-width_height_player, pos_start_y), "pos_end": (PLAYER.rect.centerx-section_3_end_type1, PLAYER.rect.centery-section_3_end_type2)},
-        "diagonal-left-left-down": {"pos_start": (pos_start_x-width_height_player, pos_start_y), "pos_end": (PLAYER.rect.centerx-section_3_end_type1, PLAYER.rect.centery+section_3_end_type2)},
-        "diagonal-down-down-right": {"pos_start": (pos_start_x, pos_start_y+width_height_player), "pos_end": (PLAYER.rect.centerx+section_3_end_type2, PLAYER.rect.centery+section_3_end_type1)},
-        "diagonal-down-down-left": {"pos_start": (pos_start_x, pos_start_y+width_height_player), "pos_end": (PLAYER.rect.centerx-section_3_end_type2, PLAYER.rect.centery+section_3_end_type1)},
+        "diagonal-up-up-right": {"pos_start": (pos_start_x+width_height_player-8, pos_start_y-width_height_player), "pos_end": (PLAYER.rect.centerx+section_3_end_type2, PLAYER.rect.centery-section_3_end_type1)},
+        "diagonal-up-up-left": {"pos_start": (pos_start_x-width_height_player+8, pos_start_y-width_height_player), "pos_end": (PLAYER.rect.centerx-section_3_end_type2, PLAYER.rect.centery-section_3_end_type1)},
+        "diagonal-right-right-up": {"pos_start": (pos_start_x+width_height_player, pos_start_y-8), "pos_end": (PLAYER.rect.centerx+section_3_end_type1, PLAYER.rect.centery-section_3_end_type2)},
+        "diagonal-right-right-down": {"pos_start": (pos_start_x+width_height_player, pos_start_y+8), "pos_end": (PLAYER.rect.centerx+section_3_end_type1, PLAYER.rect.centery+section_3_end_type2)},
+        "diagonal-left-left-up": {"pos_start": (pos_start_x-width_height_player, pos_start_y-8), "pos_end": (PLAYER.rect.centerx-section_3_end_type1, PLAYER.rect.centery-section_3_end_type2)},
+        "diagonal-left-left-down": {"pos_start": (pos_start_x-width_height_player, pos_start_y+8), "pos_end": (PLAYER.rect.centerx-section_3_end_type1, PLAYER.rect.centery+section_3_end_type2)},
+        "diagonal-down-down-right": {"pos_start": (pos_start_x+8, pos_start_y+width_height_player), "pos_end": (PLAYER.rect.centerx+45, PLAYER.rect.centery+section_3_end_type1)},
+        "diagonal-down-down-left": {"pos_start": (pos_start_x-8, pos_start_y+width_height_player), "pos_end": (PLAYER.rect.centerx-45, PLAYER.rect.centery+section_3_end_type1)},
     }
 
 def draw_lines_sensors(lines_data):
@@ -268,7 +268,6 @@ while running:
 
     screen.blit(PLAYER.image, (PLAYER.rect.x, PLAYER.rect.y))
     PLAYER.update()
-
 
     pygame.display.flip()
 

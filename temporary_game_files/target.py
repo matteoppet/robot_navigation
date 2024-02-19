@@ -5,7 +5,7 @@ import numpy as np
 class Target(Sprite):
     def __init__(self):
         # INFO: work with position on the center of the target
-        pos = (100, 100)
+        pos = (900, 850)
         width = 20
         height = 20
 
@@ -13,16 +13,15 @@ class Target(Sprite):
         self.rect = self.image.get_rect(center=pos)
 
 
-    def generate_position(self, path):
-        list_sprites = [sprite for sprite in path]
-        random_tile = np.random.choice(list_sprites)
-        center_pos_x = random_tile.rect.centerx
-        center_pos_y = random_tile.rect.centery
+    def generate_position(self, exits):
+        list_exits = [sprite for sprite in exits]
 
-        self.rect.centerx = center_pos_x
-        self.rect.centery = center_pos_y
+        random_exit = np.random.choice(list_exits)
+        
+        self.rect.center = random_exit.rect.center
 
     def collision(self, sprite):
         if Rect.colliderect(self.rect, sprite.rect):
             print("collided target")
             return True
+    
